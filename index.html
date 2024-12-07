@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Division & Fractions Quiz Game</title>
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background-color: #dceeff;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  header {
+    background: #0071bc;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 2em;
+  }
+  .container {
+    max-width: 700px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    padding: 20px;
+    margin-bottom: 40px;
+  }
+  .intro, .quiz-area, .result-area {
+    display: none;
+  }
+  .active {
+    display: block;
+  }
+  .intro p {
+    font-size: 1.2em;
+  }
+  .name-input {
+    margin: 20px 0;
+  }
+  input[type="text"] {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    font-size: 1.1em;
+  }
+  .button {
+    background: #0071bc;
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius:5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin: 5px 0;
+    display: inline-block;
+  }
+  .button:hover {
+    background: #005c94;
+  }
+  .top-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom:20px;
+  }
+  .timer, .scoreboard {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #0071bc;
+  }
+  .question-count {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    text-align:center;
+  }
+  .question-text {
+    margin-bottom: 20px;
+    font-size: 1.3em;
+  }
+  .answers {
+    margin-bottom: 20px;
+  }
+  .answers label {
+    display: block;
+    margin-bottom:10px;
+    font-size:1.2em;
+    cursor: pointer;
+  }
+  .feedback {
+    font-size:1.1em;
+    margin-bottom:20px;
+    padding:10px;
+    border-radius:5px;
+  }
+  .feedback.correct {
+    background:#d5f8d0;
+    border:1px solid #9ed98b;
+  }
+  .feedback.incorrect {
+    background:#fcdcdc;
+    border:1px solid #e5a5a5;
+  }
+  .explanation {
+    font-size:1.1em;
+    margin-bottom:20px;
+  }
+  .hidden {
+    display:none;
+  }
+  .result-area h2 {
+    font-size:1.8em;
+  }
+  .result-area p {
+    font-size:1.2em;
+  }
+  footer {
+    text-align:center;
+    color:#030303;
+    font-size: 32px;
+    margin:20px 0;
+    font-size:1em;
+  }
+
+  /* Responsive styling */
+  @media (max-width: 600px) {
+    .container {
+      margin:10px;
+      padding:15px;
+    }
+    header h1 {
+      font-size:1.8em;
+    }
+    .intro p, .question-text, .answers label {
+      font-size:1.1em;
+    }
+    .timer, .scoreboard {
+      font-size:1.1em;
+    }
+    .button {
+      font-size:1em;
+      padding:10px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Division & Fractions Quiz</h1>
+</header>
+
+<div class="container">
+  <div class="intro active" id="intro">
+    <h2>Welcome!</h2>
+    <p>This quiz will test your understanding of division and fractions. You have 40 questions and a total of 20 minutes (no per-question timer). Each question is worth 10 points. <br> <br>If the time runs out, you will see the results for only the questions you've answered.</p>
+    <p>Enter your name to begin. Good luck!</p>
+    <div class="name-input">
+      <input type="text" id="playerName" placeholder="Your Name" />
+    </div>
+    <button class="button" onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <div class="quiz-area" id="quiz-area">
+    <div class="top-info">
+      <div class="timer" id="timer">Time: 20:00</div>
+      <div class="scoreboard" id="scoreboard">Score: 0</div>
+    </div>
+    <div class="question-count" id="question-count"></div>
+    <div class="question-text" id="question-text"></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback hidden" id="feedback"></div>
+    <div class="explanation hidden" id="explanation"></div>
+    <button class="button" id="submitBtn" onclick="submitAnswer()">Check Answer</button>
+    <button class="button hidden" id="nextBtn" onclick="nextQuestion()">Next Question</button>
+  </div>
+
+  <div class="result-area" id="result-area">
+    <h2>Quiz Completed!</h2>
+    <p id="final-message"></p>
+    <p id="final-score"></p>
+    <p>Thank you for playing! Keep practicing and have fun learning!</p>
+  </div>
+</div>
+
+<footer>
+  <p>All the best!</p>
+</footer>
+
+<script>
+// Same questions array as previously corrected and verified.
+let questions = [
+  // Division questions (20)
+  {
+    type: "mcq",
+    question: "You have 120 apples and put them equally into 8 boxes. How many apples in each box?",
+    options: ["10", "12", "15", "20"],
+    correct: 2,
+    explanation: "Imagine you have 120 apples and you want to share them equally among 8 boxes. If you divide 120 by 8, each box will get the same number of apples. So, 120 ÷ 8 = 15. That means each box has 15 apples."
+  },
+  {
+    type: "mcq",
+    question: "If 9 × 4 = 36, which division fact is correct?",
+    options: ["36 ÷ 9 = 3", "36 ÷ 4 = 9", "36 ÷ 6 = 6", "36 ÷ 3 = 12"],
+    correct: 1,
+    explanation: "We know that 9 multiplied by 4 equals 36. To find the division fact, we reverse the multiplication. So, if 9 × 4 = 36, then 36 ÷ 4 = 9. That means 36 ÷ 4 = 9 is the correct division fact."
+  },
+  {
+    type: "tf",
+    question: "True or False: Dividing a number by 1 gives the number itself.",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "When you divide any number by 1, the number stays the same. For example, 5 ÷ 1 is still 5. So, dividing a number by 1 gives the number itself. This statement is True."
+  },
+  {
+    type: "mcq",
+    question: "If 56 ÷ 7 = ? Select the correct answer.",
+    options: ["6", "7", "8", "9"],
+    correct: 2,
+    explanation: "To find out how many times 7 fits into 56, you divide 56 by 7. 7 times 8 equals 56, so 56 ÷ 7 = 8. That means the correct answer is 8."
+  },
+  {
+    type: "mcq",
+    question: "What is 600 ÷ 100?",
+    options: ["6", "60", "600", "0"],
+    correct: 0,
+    explanation: "When you divide 600 by 100, you're seeing how many hundreds are in 600. Since 100 fits into 600 six times, 600 ÷ 100 = 6. So, the correct answer is 6."
+  },
+  {
+    type: "tf",
+    question: "True or False: 48 ÷ 6 = 8",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "If you divide 48 by 6, you get 8 because 6 times 8 is 48. So, 48 ÷ 6 = 8 is True."
+  },
+  {
+    type: "mcq",
+    question: "Divide 96 by 8:",
+    options: ["10", "11", "12", "14"],
+    correct: 2,
+    explanation: "To find out how many times 8 fits into 96, divide 96 by 8. 8 times 12 equals 96, so 96 ÷ 8 = 12. Therefore, the correct answer is 12."
+  },
+  {
+    type: "mcq",
+    question: "200 ÷ 10 = ?",
+    options: ["2", "20", "200", "0"],
+    correct: 1,
+    explanation: "Dividing 200 by 10 tells us how many tens are in 200. Since 10 fits into 200 exactly 20 times, 200 ÷ 10 = 20. So, the correct answer is 20."
+  },
+  {
+    type: "mcq",
+    question: "If you have 35 candies and share them equally among 5 friends, how many candies each?",
+    options: ["5", "6", "7", "8"],
+    correct: 2,
+    explanation: "To share 35 candies equally among 5 friends, divide 35 by 5. 35 ÷ 5 = 7. This means each friend gets 7 candies."
+  },
+  {
+    type: "tf",
+    question: "True or False: If 6 × 6 = 36, then 36 ÷ 6 = 6.",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "Since 6 multiplied by 6 equals 36, dividing 36 by 6 will give us back the original number, which is 6. So, 36 ÷ 6 = 6 is True."
+  },
+  {
+    type: "mcq",
+    question: "What is 720 ÷ 9?",
+    options: ["70", "80", "90", "100"],
+    correct: 1,
+    explanation: "To find out how many times 9 fits into 720, divide 720 by 9. 9 times 80 equals 720, so 720 ÷ 9 = 80. The correct answer is 80."
+  },
+  {
+    type: "mcq",
+    question: "If 3 × 7 = 21, then 21 ÷ 3 = ?",
+    options: ["7", "8", "9", "3"],
+    correct: 0,
+    explanation: "Since 3 multiplied by 7 equals 21, dividing 21 by 3 will give us back 7. So, 21 ÷ 3 = 7."
+  },
+  {
+    type: "mcq",
+    question: "Divide 400 by 100:",
+    options: ["4", "40", "400", "0"],
+    correct: 0,
+    explanation: "When you divide 400 by 100, you're finding out how many hundreds are in 400. Since 100 fits into 400 four times, 400 ÷ 100 = 4."
+  },
+  {
+    type: "mcq",
+    question: "You have 64 cookies and place them into groups of 8. How many groups?",
+    options: ["6", "7", "8", "9"],
+    correct: 2,
+    explanation: "To find out how many groups of 8 can be made from 64 cookies, divide 64 by 8. 64 ÷ 8 = 8. So, there are 8 groups."
+  },
+  {
+    type: "tf",
+    question: "True or False: 54 ÷ 6 = 9",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "If you divide 54 by 6, you get 9 because 6 times 9 is 54. So, 54 ÷ 6 = 9 is True."
+  },
+  {
+    type: "mcq",
+    question: "90 ÷ 10 = ?",
+    options: ["9", "10", "0", "1"],
+    correct: 0,
+    explanation: "Dividing 90 by 10 tells us how many tens are in 90. Since 10 fits into 90 nine times, 90 ÷ 10 = 9."
+  },
+  {
+    type: "mcq",
+    question: "If 8 × 9 = 72, what is 72 ÷ 9?",
+    options: ["6", "7", "8", "9"],
+    correct: 2,
+    explanation: "Since 8 multiplied by 9 equals 72, dividing 72 by 9 will give us back 8. So, 72 ÷ 9 = 8."
+  },
+  {
+    type: "mcq",
+    question: "What is 400 ÷ 50? (Hint: 50 × 8 = 400)",
+    options: ["2", "4", "8", "50"],
+    correct: 2,
+    explanation: "If you multiply 50 by 8, you get 400. So, dividing 400 by 50 will give you 8. Therefore, 400 ÷ 50 = 8."
+  },
+  {
+    type: "mcq",
+    question: "Find 108 ÷ 9:",
+    options: ["10", "11", "12", "13"],
+    correct: 2,
+    explanation: "To find out how many times 9 fits into 108, divide 108 by 9. 9 times 12 equals 108, so 108 ÷ 9 = 12."
+  },
+  {
+    type: "mcq",
+    question: "If you arrange 32 pencils equally into 8 groups, how many pencils per group?",
+    options: ["2", "3", "4", "5"],
+    correct: 2,
+    explanation: "To arrange 32 pencils into 8 equal groups, divide 32 by 8. 32 ÷ 8 = 4. So, each group has 4 pencils."
+  },
+
+  // Fraction questions (20)
+  {
+    type: "mcq",
+    question: "Scenario: A pizza is cut into 4 equal slices. If you shade 1 slice, what fraction is shaded?",
+    options: ["1/4", "1/2", "3/4", "4/4"],
+    correct: 0,
+    explanation: "The pizza has 4 equal slices. If you shade 1 slice, you have shaded 1 out of the 4 slices. So, the fraction shaded is 1/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A chocolate bar is divided into 2 equal parts. If you eat both parts, what fraction is eaten?",
+    options: ["1/2", "2/2", "1/4", "0/2"],
+    correct: 1,
+    explanation: "The chocolate bar is divided into 2 parts. If you eat both parts, you have eaten 2 out of the 2 parts. So, the fraction eaten is 2/2, which means you ate the whole chocolate bar."
+  },
+  {
+    type: "tf",
+    question: "Scenario: Compare 1/3 and 1/4. True or False: 1/3 is larger than 1/4.",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "When comparing fractions with the same numerator, the one with the larger denominator is smaller. So, 1/3 is bigger than 1/4 because 3 is smaller than 4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A circular pond is divided into 4 equal sections: 2 sections have lotus plants, 1 section has lily pads, and 1 section is open water. What fraction of the pond has lily pads?",
+    options: ["1/4", "2/4", "3/4", "4/4"],
+    correct: 0,
+    explanation: "The pond is divided into 4 equal sections. Only 1 section has lily pads. So, the fraction of the pond with lily pads is 1 out of 4, which is 1/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A circular pond is divided into 4 equal sections: 2 sections have lotus plants, 1 section has lily pads, and 1 section is open water. What fraction of the pond is open water?",
+    options: ["1/4", "2/4", "3/4", "0/4"],
+    correct: 0,
+    explanation: "Out of the 4 equal sections of the pond, 1 section is open water. So, the fraction of open water is 1 out of 4, which is 1/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A square garden is divided into 4 equal parts: 2 parts grow flowers, 1 part grows vegetables, and 1 part has a fountain. What fraction of the garden grows flowers?",
+    options: ["1/4", "2/4", "3/4", "4/4"],
+    correct: 1,
+    explanation: "The garden is divided into 4 equal parts. 2 of those parts grow flowers. So, the fraction of the garden that grows flowers is 2 out of 4, which is 2/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A square garden is divided into 4 equal parts: 2 parts grow flowers, 1 part grows vegetables, and 1 part has a fountain. What fraction of the garden is vegetables?",
+    options: ["1/4", "2/4", "3/4", "4/4"],
+    correct: 0,
+    explanation: "In the garden divided into 4 parts, only 1 part grows vegetables. So, the fraction of the garden that is vegetables is 1 out of 4, which is 1/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A square garden is divided into 4 equal parts: 2 parts grow flowers, 1 part grows vegetables, and 1 part has a fountain. What fraction of the garden is the fountain?",
+    options: ["1/4", "2/4", "3/4", "0/4"],
+    correct: 0,
+    explanation: "Out of the 4 equal parts of the garden, 1 part has a fountain. So, the fraction of the garden with the fountain is 1 out of 4, which is 1/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A shape is divided into 6 equal parts and 3 are shaded. What fraction is shaded?",
+    options: ["1/2", "3/6", "1/3", "3/4"],
+    correct: 1,
+    explanation: "The shape is divided into 6 equal parts, and 3 of them are shaded. So, the shaded fraction is 3 out of 6, which is written as 3/6."
+  },
+  {
+    type: "tf",
+    question: "Scenario: Consider the fractions 2/4 and 1/2. True or False: 2/4 is the same amount as 1/2.",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "If you simplify 2/4 by dividing both the top and bottom by 2, you get 1/2. So, 2/4 is the same as 1/2. This statement is True."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A rectangle is divided into 8 equal parts and 4 are shaded. Which fraction is shaded?",
+    options: ["1/8", "2/8", "4/8", "8/8"],
+    correct: 2,
+    explanation: "The rectangle is divided into 8 equal parts, and 4 of them are shaded. So, the shaded fraction is 4 out of 8, which is written as 4/8."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A shape is divided into 3 equal parts and 1 part is shaded. What fraction is shaded?",
+    options: ["1/3", "2/3", "1/4", "3/3"],
+    correct: 0,
+    explanation: "The shape is divided into 3 equal parts, and only 1 part is shaded. So, the shaded fraction is 1 out of 3, which is written as 1/3."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A bar is divided into 10 equal parts and 5 are shaded. What fraction is shaded?",
+    options: ["5/10", "1/2", "2/10", "5/5"],
+    correct: 0,
+    explanation: "The bar is divided into 10 equal parts, and 5 of them are shaded. So, the shaded fraction is 5 out of 10, which is written as 5/10."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: You see 4 equal parts and 2 oranges shaded in one of those representations. If 2 out of 4 parts are shaded, what fraction is shaded?",
+    options: ["1/4", "2/4", "3/4", "4/4"],
+    correct: 1,
+    explanation: "There are 4 equal parts, and 2 of them are shaded. So, the shaded fraction is 2 out of 4, which is written as 2/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A shape is divided into 2 equal parts and 1 part is shaded. What fraction is shaded?",
+    options: ["1/2", "2/2", "1/3", "0/2"],
+    correct: 0,
+    explanation: "The shape is divided into 2 equal parts, and 1 part is shaded. So, the shaded fraction is 1 out of 2, which is written as 1/2."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: 12 items are arranged into groups of 3 each. How many groups of 3 can you make?",
+    options: ["3", "4", "6", "12"],
+    correct: 1,
+    explanation: "To find out how many groups of 3 can be made from 12 items, divide 12 by 3. 12 ÷ 3 = 4. So, you can make 4 groups."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A shape is divided into 4 equal parts and you shade 3 of them. What fraction is shaded?",
+    options: ["1/4", "2/4", "3/4", "4/4"],
+    correct: 2,
+    explanation: "The shape is divided into 4 equal parts, and 3 of them are shaded. So, the shaded fraction is 3 out of 4, which is written as 3/4."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: You have 15 cookies and put them into groups of 5 each. How many groups are formed?",
+    options: ["2", "3", "5", "10"],
+    correct: 1,
+    explanation: "To find out how many groups of 5 can be made from 15 cookies, divide 15 by 5. 15 ÷ 5 = 3. So, there are 3 groups."
+  },
+  {
+    type: "tf",
+    question: "Scenario: Consider the fraction 4/4. True or False: 4/4 is one whole.",
+    options: ["True", "False"],
+    correct: "True",
+    explanation: "When the top number (numerator) and the bottom number (denominator) are the same, like 4/4, it means you have one whole. So, 4/4 is one whole. This statement is True."
+  },
+  {
+    type: "mcq",
+    question: "Scenario: A bar is divided into 4 equal parts and 2 are shaded. Which fraction represents the shaded part?",
+    options: ["1/4", "2/4", "3/4", "4/4"],
+    correct: 1,
+    explanation: "The bar is divided into 4 equal parts, and 2 of them are shaded. So, the shaded fraction is 2 out of 4, which is written as 2/4."
+  }
+];
+
+
+// Shuffle the questions array to get them in a random order every time.
+function shuffleQuestions(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+shuffleQuestions(questions);
+
+let currentQuestionIndex = 0;
+let score = 0;
+let playerName = "";
+let totalTime = 20 * 60; // 20 minutes in seconds
+let timerInterval = null;
+let answeredQuestions = 0;
+
+function startQuiz() {
+  const nameInput = document.getElementById("playerName").value.trim();
+  if(!nameInput) {
+    alert("Please enter your name before starting.");
+    return;
+  }
+  playerName = nameInput;
+  document.getElementById("intro").classList.remove("active");
+  document.getElementById("quiz-area").classList.add("active");
+  showQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  const timerEl = document.getElementById("timer");
+  timerInterval = setInterval(()=>{
+    if(totalTime <= 0) {
+      clearInterval(timerInterval);
+      endQuiz();
+      return;
+    }
+    totalTime--;
+    let minutes = Math.floor(totalTime/60);
+    let seconds = totalTime%60;
+    if(seconds<10) seconds = "0"+seconds;
+    timerEl.textContent = "Time: " + minutes+":"+seconds;
+  },1000);
+}
+
+function showQuestion() {
+  let q = questions[currentQuestionIndex];
+  document.getElementById("question-count").textContent = "Question " + (currentQuestionIndex+1) + " of " + questions.length;
+  document.getElementById("question-text").textContent = q.question;
+  let ansDiv = document.getElementById("answers");
+  ansDiv.innerHTML = "";
+  document.getElementById("feedback").classList.add("hidden");
+  document.getElementById("explanation").classList.add("hidden");
+  document.getElementById("nextBtn").classList.add("hidden");
+  document.getElementById("submitBtn").classList.remove("hidden");
+
+  if(q.type==="mcq") {
+    q.options.forEach((opt,i)=>{
+      let label = document.createElement("label");
+      let inp = document.createElement("input");
+      inp.type="radio";
+      inp.name="answer";
+      inp.value=i;
+      label.appendChild(inp);
+      label.appendChild(document.createTextNode(" "+opt));
+      ansDiv.appendChild(label);
+    });
+  } else if(q.type==="tf") {
+    q.options.forEach(opt=>{
+      let label = document.createElement("label");
+      let inp = document.createElement("input");
+      inp.type="radio";
+      inp.name="answer";
+      inp.value=opt;
+      label.appendChild(inp);
+      label.appendChild(document.createTextNode(" "+opt));
+      ansDiv.appendChild(label);
+    });
+  }
+}
+
+function submitAnswer() {
+  let q = questions[currentQuestionIndex];
+  let userAns = "";
+
+  if(q.type==="mcq" || q.type==="tf") {
+    let radios = document.querySelectorAll('input[name="answer"]');
+    for(let r of radios) {
+      if(r.checked) {
+        userAns = r.value;
+        break;
+      }
+    }
+    if(!userAns) {
+      alert("Please select an answer.");
+      return;
+    }
+  }
+
+  // Evaluate
+  let correct = false;
+  if(q.type==="mcq") {
+    if(parseInt(userAns)===q.correct) {
+      correct = true;
+    }
+  } else {
+    // tf
+    if(userAns === q.correct) correct = true;
+  }
+
+  if(correct) {
+    score +=10;
+  }
+
+  answeredQuestions++;
+
+  // Show feedback
+  let feedbackEl = document.getElementById("feedback");
+  feedbackEl.classList.remove("hidden");
+  feedbackEl.textContent = correct ? "Correct!" : "Incorrect!";
+  feedbackEl.classList.remove("correct","incorrect");
+  feedbackEl.classList.add(correct ? "correct":"incorrect");
+
+  let explanationEl = document.getElementById("explanation");
+  explanationEl.classList.remove("hidden");
+  explanationEl.textContent = "Explanation: " + q.explanation;
+
+  // Update score
+  document.getElementById("scoreboard").textContent = "Score: " + score;
+
+  document.getElementById("submitBtn").classList.add("hidden");
+  document.getElementById("nextBtn").classList.remove("hidden");
+}
+
+function nextQuestion() {
+  currentQuestionIndex++;
+  if(currentQuestionIndex>=questions.length) {
+    endQuiz();
+  } else {
+    showQuestion();
+  }
+}
+
+function endQuiz() {
+  clearInterval(timerInterval);
+  document.getElementById("quiz-area").classList.remove("active");
+  document.getElementById("result-area").classList.add("active");
+
+  let finalMsg = document.getElementById("final-message");
+  finalMsg.textContent = "Great job, " + playerName + "!";
+
+  let finalScore = document.getElementById("final-score");
+  finalScore.textContent = "Your Score: " + score + " out of " + (answeredQuestions*10);
+}
+</script>
+</body>
+</html>
